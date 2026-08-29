@@ -1,0 +1,7 @@
+[project]
+name = "oceanguard-ai"
+version = "1.0.0"
+description = "OceanGuard AI - Marine Oil Spill Attribution System (SIH26143)"
+
+[tool.vercel]
+entrypoint = "backend.app.main:app"
