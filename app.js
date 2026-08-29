@@ -92,9 +92,11 @@
 
     L.control.zoom({ position: 'bottomright' }).addTo(state.map);
 
-    // FREE High-Performance Tile Layers — 100% reliable, zero missing tiles
+    // CARTO Basemaps API Key from workspace
+    const cartoKey = 'cb1_2it4_1_88b146b5e567a7f8ff15eb10';
+
     // 1. Primary: Carto Voyager (Crystal-clear coastal bathymetry & shipping lanes)
-    const cartoVoyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    const cartoVoyager = L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${cartoKey}`, {
       subdomains: 'abcd',
       maxZoom: 19,
       attribution: '© OpenStreetMap contributors, © CARTO'
@@ -107,7 +109,7 @@
     });
 
     // 3. Dark Tactical: Carto Dark Matter (Night surveillance radar theme)
-    const cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    const cartoDark = L.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?api_key=${cartoKey}`, {
       subdomains: 'abcd',
       maxZoom: 19,
       attribution: '© OpenStreetMap contributors, © CARTO'
