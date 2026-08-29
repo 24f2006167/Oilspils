@@ -1,0 +1,20 @@
+{
+  "model": "XGBoostClassifier",
+  "version": "1.0.0",
+  "trained_at": "2026-08-28T15:47:26.941409",
+  "features": [
+    "proximity_km",
+    "time_overlap_min",
+    "speed_anomaly_score",
+    "drift_alignment",
+    "ais_completeness"
+  ],
+  "auc_roc": 1.0,
+  "avg_precision": 1.0,
+  "cv_auc_mean": 1.0,
+  "cv_auc_std": 0.0,
+  "n_train": 640,
+  "n_test": 160,
+  "sih_reference": "SIH26143",
+  "team": "SamadhanLabs"
+}

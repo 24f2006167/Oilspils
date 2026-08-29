@@ -1,0 +1,27 @@
+{
+  "models": {
+    "xgboost": {
+      "auc_roc": 1.0,
+      "avg_precision": 1.0
+    },
+    "lightgbm": {
+      "auc_roc": 1.0,
+      "avg_precision": 1.0
+    }
+  },
+  "cv_auc_mean": 1.0,
+  "cv_auc_std": 0.0,
+  "features": [
+    "proximity_km",
+    "time_overlap_min",
+    "speed_anomaly_score",
+    "drift_alignment",
+    "ais_completeness"
+  ],
+  "n_train": 960,
+  "n_test": 240,
+  "trained_at": "2026-08-28T15:49:15.082981",
+  "sih_reference": "SIH26143",
+  "team": "SamadhanLabs",
+  "note": "Replace synthetic data with ITOPF/CEDRE labeled incidents for production."
+}

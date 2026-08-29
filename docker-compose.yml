@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: oceanguard-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://oceanguard:marine_ai@db:5432/oceanguard_db
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: oceanguard-db
+    environment:
+      - POSTGRES_USER=oceanguard
+      - POSTGRES_PASSWORD=marine_ai
+      - POSTGRES_DB=oceanguard_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/seed_data.sql:/docker-entrypoint-initdb.d/02_seed.sql
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
