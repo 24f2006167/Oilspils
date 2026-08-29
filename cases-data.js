@@ -65,6 +65,42 @@ const INVESTIGATION_CASES = {
       ]
     },
 
+    // Real-World Marine Feature: Ecological Vulnerability Index (ESI)
+    ecoZones: [
+      {
+        name: "Thane Creek Mangrove & Flamingo Sanctuary",
+        esiScore: 10,
+        type: "Mangrove & Coastal Estuary",
+        distanceKm: 42.5,
+        etaHours: 28.5,
+        polygon: [
+          [19.020, 72.920], [19.070, 72.980], [19.130, 72.995], [19.140, 72.940], [19.020, 72.920]
+        ]
+      },
+      {
+        name: "Alibaug Intertidal Fisheries Nursery",
+        esiScore: 8,
+        type: "Intertidal Mudflats & Spawning Grounds",
+        distanceKm: 28.0,
+        etaHours: 19.2,
+        polygon: [
+          [18.680, 72.820], [18.720, 72.900], [18.650, 72.920], [18.620, 72.840], [18.680, 72.820]
+        ]
+      }
+    ],
+
+    // Real-World Marine Feature: ICG Interception & Containment Plan
+    icgResponse: {
+      station: "ICG Regional HQ West (Mumbai) & CGAS Daman",
+      craft: "ICGS Samudra Prahari (Pollution Control Vessel CG-01)",
+      aircraft: "Dornier 228 Maritime Patrol (Squadron 848)",
+      suspectEezExitHours: 3.8,
+      interceptCoords: [19.220, 72.910],
+      boomRequiredMeters: 1200,
+      skimmerCapacityM3H: 180,
+      dispersantPermit: "RESTRICTED (Tier-2 Response Required)"
+    },
+
     // Stage 3: Match Output (Candidate AIS Vessels)
     vessels: [
       {
@@ -285,6 +321,40 @@ const INVESTIGATION_CASES = {
         [9.145, 79.270],
         [9.182, 79.320]
       ]
+    },
+
+    ecoZones: [
+      {
+        name: "Gulf of Mannar Coral Biosphere & Dugong Reserve",
+        esiScore: 10,
+        type: "Subtidal Coral Reefs & Seagrass",
+        distanceKm: 14.2,
+        etaHours: 8.5,
+        polygon: [
+          [9.220, 79.200], [9.280, 79.280], [9.240, 79.360], [9.180, 79.280], [9.220, 79.200]
+        ]
+      },
+      {
+        name: "Dhanushkodi Olive Ridley Nesting Beach",
+        esiScore: 9,
+        type: "Sandy Turtle Nesting Coastline",
+        distanceKm: 22.0,
+        etaHours: 14.0,
+        polygon: [
+          [9.150, 79.400], [9.200, 79.480], [9.160, 79.520], [9.120, 79.440], [9.150, 79.400]
+        ]
+      }
+    ],
+
+    icgResponse: {
+      station: "ICG Mandapam Station & CGAS Tuticorin",
+      craft: "ICGS Sankalp (Offshore Patrol Vessel CG-46)",
+      aircraft: "Chetak Multi-Mission Helicopter",
+      suspectEezExitHours: 2.4,
+      interceptCoords: [9.310, 79.450],
+      boomRequiredMeters: 800,
+      skimmerCapacityM3H: 120,
+      dispersantPermit: "PROHIBITED (Coral Biosphere Sanctuary Zone)"
     },
 
     vessels: [

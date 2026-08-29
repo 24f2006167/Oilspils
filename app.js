@@ -138,6 +138,8 @@
     state.layerGroups.drift       = L.layerGroup().addTo(state.map);
     state.layerGroups.origin      = L.layerGroup().addTo(state.map);
     state.layerGroups.vessels     = L.layerGroup().addTo(state.map);
+    state.layerGroups.ecozones    = L.layerGroup().addTo(state.map);
+    state.layerGroups.icg         = L.layerGroup().addTo(state.map);
     state.layerGroups.metocean    = L.layerGroup();
     state.layerGroups.replayMarker = L.layerGroup().addTo(state.map);
     state.layerGroups.sarOverlay  = L.layerGroup().addTo(state.map);
@@ -305,9 +307,56 @@
           `, { maxWidth: 260 })
           .addTo(state.layerGroups.vessels);
       });
+    // 6 — Critical Marine Habitats (ESI Index)
+    if (data.ecoZones) {
+      data.ecoZones.forEach(zone => {
+        L.polygon(zone.polygon, {
+          color: '#10b981', weight: 2, fillColor: '#10b981', fillOpacity: 0.22, dashArray: '5,5'
+        }).bindTooltip(
+          `<div style="font-family:Inter,sans-serif;font-size:12px;padding:3px 0;">
+            <b style="color:#059669;">🌿 CRITICAL MARINE HABITAT (ESI ${zone.esiScore}/10)</b><br>
+            Zone: <b>${zone.name}</b><br>
+            Biome: <b>${zone.type}</b><br>
+            Distance to Slick: <b>${zone.distanceKm} km</b><br>
+            Predicted Beaching ETA: <b style="color:#dc2626;">${zone.etaHours} Hours</b>
+          </div>`,
+          { sticky: true }
+        ).addTo(state.layerGroups.ecozones);
+      });
     }
 
-    // 5 — MetOcean arrows
+    // 7 — ICG Intercept & Response Plan
+    if (data.icgResponse && data.icgResponse.interceptCoords) {
+      const icgPos = data.icgResponse.interceptCoords;
+      const icgIcon = L.divIcon({
+        className: '',
+        html: `<div style="background:#0284c7;color:#fff;font-size:11px;font-weight:900;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.4);">⚓</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      });
+
+      L.marker(icgPos, { icon: icgIcon }).bindTooltip(
+        `<div style="font-family:Inter,sans-serif;font-size:12px;padding:4px 0;">
+          <b style="color:#0284c7;">⚓ ICG TACTICAL INTERCEPTION WAYPOINT</b><br>
+          Assigned Unit: <b>${data.icgResponse.craft}</b><br>
+          Air Reconnaissance: <b>${data.icgResponse.aircraft}</b><br>
+          Suspect EEZ Escape Horizon: <b style="color:#d97706;">${data.icgResponse.suspectEezExitHours} Hours</b><br>
+          Required Boom: <b>${data.icgResponse.boomRequiredMeters} m Heavy Ocean Boom</b><br>
+          Skimmer Recovery Rate: <b>${data.icgResponse.skimmerCapacityM3H} m³/hr</b><br>
+          Chemical Dispersant Status: <b>${data.icgResponse.dispersantPermit}</b>
+        </div>`,
+        { sticky: true }
+      ).addTo(state.layerGroups.icg);
+
+      // Intercept dashed trajectory line
+      if (data.trace?.originCenter) {
+        L.polyline([data.trace.originCenter, icgPos], {
+          color: '#0284c7', weight: 2, dashArray: '4,6', opacity: 0.8
+        }).addTo(state.layerGroups.icg);
+      }
+    }
+
+    // 8 — MetOcean arrows
     renderMetoceanLayer();
   }
 
@@ -512,9 +561,42 @@
                 <div class="data-row"><span class="data-row-key">Origin Centroid Lat</span><span class="data-row-val">${data.trace.originCenter[0]}° N</span></div>
                 <div class="data-row"><span class="data-row-key">Origin Centroid Lon</span><span class="data-row-val">${data.trace.originCenter[1]}° E</span></div>
               </div>
-              <div class="summary-text-box" style="margin-top:10px;">Drift equations integrate ECMWF wind forcing (3.2% windage factor) and HYCOM surface current analysis over 6-hour reverse simulation window.</div>
+              <div class="summary-text-box" style="margin-top:10px;">Drift equations integrate ECMWF wind forcing (3.2% windage factor) and HYCOM surface current analysis over reverse simulation window.</div>
             </div>
           </div>
+
+          <!-- Real-World Feature: Critical Marine Habitats (ESI) -->
+          ${data.ecoZones ? `
+          <div class="gov-panel-card" style="border-left: 3px solid #10b981;">
+            <div class="gov-card-header"><span class="gov-card-title">🌿 Critical Marine Habitats (ESI Index)</span><span class="gov-tag" style="background:#10b981;color:#fff;">VULNERABILITY</span></div>
+            <div class="gov-card-body">
+              ${data.ecoZones.map(z => `
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;padding:8px 10px;margin-bottom:6px;font-size:0.72rem;">
+                  <div style="display:flex;justify-content:space-between;font-weight:800;color:#166534;margin-bottom:2px;">
+                    <span>${z.name}</span>
+                    <span style="background:#dcfce7;color:#15803d;padding:1px 6px;border-radius:3px;">ESI ${z.esiScore}/10</span>
+                  </div>
+                  <div style="color:#475569;">Biome: <b>${z.type}</b> • Distance: <b>${z.distanceKm} km</b> • Beaching ETA: <b style="color:#dc2626;">${z.etaHours}h</b></div>
+                </div>
+              `).join('')}
+            </div>
+          </div>` : ''}
+
+          <!-- Real-World Feature: ICG Interception Action -->
+          ${data.icgResponse ? `
+          <div class="gov-panel-card" style="border-left: 3px solid #0284c7;">
+            <div class="gov-card-header"><span class="gov-card-title">⚓ ICG Interception & Containment Plan</span><span class="gov-tag" style="background:#0284c7;color:#fff;">ACTION</span></div>
+            <div class="gov-card-body">
+              <div class="data-row-list">
+                <div class="data-row"><span class="data-row-key">Assigned Craft</span><span class="data-row-val" style="color:#0284c7;font-weight:700;">${data.icgResponse.craft}</span></div>
+                <div class="data-row"><span class="data-row-key">Air Surveillance</span><span class="data-row-val">${data.icgResponse.aircraft}</span></div>
+                <div class="data-row"><span class="data-row-key">Suspect EEZ Escape</span><span class="data-row-val" style="color:#d97706;font-weight:700;">${data.icgResponse.suspectEezExitHours} Hours</span></div>
+                <div class="data-row"><span class="data-row-key">Required Ocean Boom</span><span class="data-row-val">${data.icgResponse.boomRequiredMeters} m Heavy Boom</span></div>
+                <div class="data-row"><span class="data-row-key">Skimmer Capacity</span><span class="data-row-val">${data.icgResponse.skimmerCapacityM3H} m³/hr</span></div>
+                <div class="data-row"><span class="data-row-key">Chemical Dispersants</span><span class="data-row-val" style="font-size:0.68rem;">${data.icgResponse.dispersantPermit}</span></div>
+              </div>
+            </div>
+          </div>` : ''}
         `;
         break;
 
@@ -1194,6 +1276,43 @@
       DOM.sihModal?.classList.add('active');
     },
     openReportModal,
+    exportGeoJSON() {
+      const data = INVESTIGATION_CASES[state.currentCaseId];
+      if (!data) return;
+      const geojson = {
+        type: "FeatureCollection",
+        metadata: {
+          incidentId: data.id,
+          title: data.title,
+          generatedBy: "OceanGuard AI Platform - SIH26143",
+          timestamp: new Date().toISOString()
+        },
+        features: [
+          {
+            type: "Feature",
+            properties: { layer: "Slick Polygon", areaKm2: data.detection.areaKm2, confidence: data.detection.confidence },
+            geometry: { type: "Polygon", coordinates: [data.detection.spillPolygon.map(p => [p[1], p[0]])] }
+          },
+          {
+            type: "Feature",
+            properties: { layer: "Origin Envelope", window: `${data.trace.likelyStartTime} - ${data.trace.likelyEndTime}` },
+            geometry: { type: "Polygon", coordinates: [data.trace.originPolygon.map(p => [p[1], p[0]])] }
+          },
+          {
+            type: "Feature",
+            properties: { layer: "Drift Trajectory Vector", current: data.trace.surfaceCurrentSpeed, wind: `${data.trace.windSpeedKts} kts` },
+            geometry: { type: "LineString", coordinates: data.trace.driftVector.map(p => [p[1], p[0]]) }
+          }
+        ]
+      };
+      const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${data.id}_GIS_Evidence.geojson`;
+      a.click();
+      URL.revokeObjectURL(url);
+    },
     highlightVessel(id) {
       const d = INVESTIGATION_CASES[state.currentCaseId];
       const v = d?.vessels.find(x => x.id === id);

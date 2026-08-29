@@ -230,9 +230,22 @@
             <span class="layer-dot wind-dot"></span>
             <span>MetOcean</span>
           </label>
+          <label class="layer-toggle active" title="Marine Protected Areas & Critical Habitats (ESI Index)">
+            <input type="checkbox" checked data-layer="ecozones">
+            <span class="layer-dot" style="background:#10b981;"></span>
+            <span>🌿 Eco-Zones</span>
+          </label>
+          <label class="layer-toggle active" title="Indian Coast Guard Intercept & Containment Vector">
+            <input type="checkbox" checked data-layer="icg">
+            <span class="layer-dot" style="background:#0284c7;"></span>
+            <span>⚓ ICG Patrol</span>
+          </label>
         </div>
 
         <div class="toolbar-section">
+          <button id="btnExportGeoJSON" class="map-tool-btn" title="Export incident layers to GIS GeoJSON" onclick="window.OceanGuardApp.exportGeoJSON()">
+            🗺️ GeoJSON
+          </button>
           <button id="btnResetMap" class="map-tool-btn" title="Reset to incident extent">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             Reset View
@@ -557,7 +570,7 @@
 
   <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="cases-data.js?v=20260829_7"></script>
-  <script src="app.js?v=20260829_7"></script>
+  <script src="cases-data.js?v=20260829_8"></script>
+  <script src="app.js?v=20260829_8"></script>
 </body>
 </html>
