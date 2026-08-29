@@ -14,10 +14,11 @@
     currentCaseId: 'INV-2026-001',
     currentStage: 'dashboard',
     activeLayers: { spill: true, drift: true, origin: true, vessels: true, metocean: false },
+    sarModeActive: false,
     replay: { step: 0, isPlaying: false, speed: 1, timer: null },
     backendAvailable: false,
     map: null,
-    layerGroups: { spill: null, drift: null, origin: null, vessels: null, metocean: null, replayMarker: null }
+    layerGroups: { spill: null, drift: null, origin: null, vessels: null, metocean: null, replayMarker: null, sarOverlay: null }
   };
 
   // ============================================================
@@ -38,6 +39,7 @@
     speedBtns:        document.querySelectorAll('.speed-pill'),
     layerToggles:     document.querySelectorAll('.layer-toggle input'),
     btnResetMap:      document.getElementById('btnResetMap'),
+    btnToggleSARView: document.getElementById('btnToggleSARView'),
     btnQuickDemo:     document.getElementById('btnQuickDemo'),
     btnExportReport:  document.getElementById('btnExportReport'),
     reportModal:      document.getElementById('reportModal'),
@@ -128,6 +130,7 @@
     state.layerGroups.vessels     = L.layerGroup().addTo(state.map);
     state.layerGroups.metocean    = L.layerGroup();
     state.layerGroups.replayMarker = L.layerGroup().addTo(state.map);
+    state.layerGroups.sarOverlay  = L.layerGroup().addTo(state.map);
 
     // Mouse coords HUD
     state.map.on('mousemove', e => {
@@ -643,23 +646,167 @@
   }
 
   function startReplay() {
+    if (state.replay.timer) {
+      clearInterval(state.replay.timer);
+      state.replay.timer = null;
+    }
     state.replay.isPlaying = true;
-    DOM.btnReplayPlay.textContent = '⏸ PAUSE';
-    DOM.btnReplayPlay.style.background = '#c0392b';
+    if (DOM.btnReplayPlay) {
+      DOM.btnReplayPlay.textContent = '⏸ PAUSE';
+      DOM.btnReplayPlay.style.background = '#c0392b';
+    }
 
     const data = INVESTIGATION_CASES[state.currentCaseId];
+    if (!data?.replaySteps?.length) return;
     const total = data.replaySteps.length;
+
+    // If already at end, restart from beginning
+    if (state.replay.step >= total - 1) {
+      setReplayStep(0);
+    }
+
     state.replay.timer = setInterval(() => {
-      setReplayStep((state.replay.step + 1) % total);
-    }, 2400 / state.replay.speed);
+      const next = state.replay.step + 1;
+      if (next >= total) {
+        setReplayStep(0);
+      } else {
+        setReplayStep(next);
+      }
+    }, Math.max(600, 2400 / state.replay.speed));
   }
 
   function pauseReplay() {
     state.replay.isPlaying = false;
-    DOM.btnReplayPlay.textContent = '▶ PLAY';
-    DOM.btnReplayPlay.style.background = '';
-    clearInterval(state.replay.timer);
-    state.replay.timer = null;
+    if (DOM.btnReplayPlay) {
+      DOM.btnReplayPlay.textContent = '▶ PLAY';
+      DOM.btnReplayPlay.style.background = '';
+    }
+    if (state.replay.timer) {
+      clearInterval(state.replay.timer);
+      state.replay.timer = null;
+    }
+  }
+
+  // ============================================================
+  // SAR RADAR MODE OVERLAY ENGINE
+  // ============================================================
+  function toggleSARMode() {
+    state.sarModeActive = !state.sarModeActive;
+    if (state.sarModeActive) {
+      DOM.btnToggleSARView?.classList.add('active');
+      if (DOM.btnToggleSARView) DOM.btnToggleSARView.innerHTML = '🛰️ SAR Mode: ON';
+      renderSAROverlay();
+    } else {
+      DOM.btnToggleSARView?.classList.remove('active');
+      if (DOM.btnToggleSARView) DOM.btnToggleSARView.innerHTML = '🛰️ SAR Mode';
+      clearSAROverlay();
+    }
+  }
+
+  function clearSAROverlay() {
+    state.layerGroups.sarOverlay?.clearLayers();
+    const existingHud = document.getElementById('sarHudBadge');
+    if (existingHud) existingHud.remove();
+  }
+
+  function renderSAROverlay() {
+    clearSAROverlay();
+    const data = INVESTIGATION_CASES[state.currentCaseId];
+    if (!data?.detection?.center) return;
+
+    const [cLat, cLon] = data.detection.center;
+    const bounds = [
+      [cLat - 0.055, cLon - 0.075],
+      [cLat + 0.055, cLon + 0.075]
+    ];
+
+    // Synthesize calibrated Sentinel-1 C-Band SAR raster via HTML5 Canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = 440;
+    canvas.height = 320;
+    const ctx = canvas.getContext('2d');
+
+    // 1. Speckled ocean backscatter background (Rayleigh/Gamma noise)
+    const imgData = ctx.createImageData(canvas.width, canvas.height);
+    const buf = imgData.data;
+    for (let i = 0; i < buf.length; i += 4) {
+      const noise = Math.floor(70 + Math.random() * 80);
+      buf[i]     = Math.floor(noise * 0.35); // R
+      buf[i + 1] = Math.floor(noise * 0.65); // G
+      buf[i + 2] = Math.floor(noise * 0.95); // B (cool radar false-color)
+      buf[i + 3] = 235; // Alpha
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    // 2. Low-backscatter mineral oil slick damping depression
+    ctx.save();
+    ctx.filter = 'blur(6px)';
+    ctx.fillStyle = 'rgba(2, 6, 18, 0.94)';
+    ctx.beginPath();
+    ctx.ellipse(220, 160, 95, 48, -0.32, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(170, 180, 50, 26, 0.35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 3. SAR range-doppler grid lines
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.20)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < canvas.width; x += 55) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += 55) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+    }
+
+    // 4. AI segmentation bounding box & annotation
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(105, 95, 230, 130);
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    ctx.fillRect(105, 70, 230, 24);
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = 'bold 10px monospace';
+    ctx.fillText(`AI SLICK DETECT: ${data.detection.areaKm2} km² (${(data.detection.confidence*100).toFixed(0)}%)`, 112, 86);
+
+    // 5. SAR Metadata Footer
+    ctx.fillStyle = 'rgba(2, 6, 18, 0.95)';
+    ctx.fillRect(0, canvas.height - 24, canvas.width, 24);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '9px monospace';
+    ctx.fillText('SENTINEL-1 C-BAND SAR | VV+VH CROSS-POL | 10m RESOLUTION | -11.4 dB CONTRAST', 10, canvas.height - 8);
+
+    const sarOverlay = L.imageOverlay(canvas.toDataURL(), bounds, {
+      opacity: 0.95,
+      interactive: true,
+      zIndex: 500
+    }).bindTooltip(
+      `<div style="font-family:Inter,sans-serif;font-size:12px;padding:4px 0;">
+        <b style="color:#0284c7;">🛰️ SENTINEL-1 C-BAND SAR RASTER</b><br>
+        Sensor: <b>Sentinel-1 C-Band SAR (VV/VH)</b><br>
+        Oil Damping Contrast: <b>-11.4 dB vs Background</b><br>
+        Segmented Footprint: <b>${data.detection.areaKm2} km²</b><br>
+        AI Confidence: <b>${(data.detection.confidence*100).toFixed(0)}%</b>
+      </div>`,
+      { sticky: true }
+    );
+
+    state.layerGroups.sarOverlay.addLayer(sarOverlay);
+    state.map.flyToBounds(bounds, { padding: [40, 40], duration: 1.2 });
+
+    // Add HUD indicator
+    const hud = document.querySelector('.telemetry-hud');
+    if (hud && !document.getElementById('sarHudBadge')) {
+      const pill = document.createElement('div');
+      pill.id = 'sarHudBadge';
+      pill.className = 'sar-hud-pill';
+      pill.innerHTML = '<span>🛰️ SAR C-BAND RADAR VIEW ACTIVE</span>';
+      hud.appendChild(pill);
+    }
   }
 
   // ============================================================
@@ -783,6 +930,8 @@
       const d = INVESTIGATION_CASES[state.currentCaseId];
       if (d) state.map.flyTo(d.center, d.zoom);
     });
+
+    DOM.btnToggleSARView?.addEventListener('click', toggleSARMode);
 
     DOM.btnReplayPlay?.addEventListener('click', togglePlay);
     DOM.btnReplayPrev?.addEventListener('click', () => {

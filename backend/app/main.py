@@ -9,12 +9,17 @@ from fastapi.staticfiles import StaticFiles
 import os
 
 from backend.app.core.config import settings
+from backend.app.db.session import engine, Base
+from backend.app.db import models
 from backend.app.api.routes import health, investigations, detection, tracing, vessels, ranking
+
+# Auto-create all SQLite tables on startup
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    description="OceanGuard AI: Marine oil spill origin backtracking and AIS vessel attribution engine."
+    description="OceanGuard AI: Marine oil spill origin backtracking and AIS vessel attribution engine (SIH26143)."
 )
 
 # Enable CORS for cross-origin frontend requests
@@ -38,7 +43,9 @@ app.include_router(ranking.router)
 def root():
     return {
         "platform": "OceanGuard AI Platform",
+        "sih_problem_statement": "SIH26143 (MoES / INCOIS / ICG)",
         "status": "online",
+        "database": "SQLite (oceanguard.db)",
         "docs_url": "/docs",
         "redoc_url": "/redoc"
     }

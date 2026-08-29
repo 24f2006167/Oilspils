@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     API_PREFIX: str = "/api"
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
-    DATABASE_URL: str = "postgresql://oceanguard:marine_ai@localhost:5432/oceanguard_db"
+    DATABASE_URL: str = "sqlite:///./oceanguard.db"
     
     # Evidence fusion weight distribution (Master Plan SIH26143)
     WEIGHT_PROXIMITY: float = 0.30
