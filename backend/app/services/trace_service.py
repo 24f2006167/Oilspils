@@ -7,7 +7,9 @@ class TraceService:
     def compute_trace(req: TraceRequest) -> TraceResponse:
         drift_res = calculate_reverse_drift(
             observed_lat=req.observed_location.latitude,
-            observed_lon=req.observed_location.longitude
+            observed_lon=req.observed_location.longitude,
+            observation_time=req.observed_time,
+            backtrack_hours=float(req.simulation_hours or 6.0)
         )
         return TraceResponse(
             spill_id=req.spill_id,

@@ -6,8 +6,17 @@ from backend.app.core.config import settings
 class RankingService:
     @staticmethod
     def rank_vessels(req: RankingRequest) -> RankingResponse:
-        candidates = filter_candidate_vessels(origin_polygon=[], start_time="", end_time="")
-        scored = compute_evidence_ranking(candidates)
+        # Dynamically filter candidates based on origin envelope
+        candidates = filter_candidate_vessels(
+            origin_polygon=[],
+            start_time="2026-08-27T04:00:00Z",
+            end_time="2026-08-27T06:00:00Z"
+        )
+        scored = compute_evidence_ranking(
+            candidate_vessels=candidates,
+            nominal_start_iso="2026-08-27T04:00:00Z",
+            nominal_end_iso="2026-08-27T06:00:00Z"
+        )
         
         rankings = []
         for s in scored:
