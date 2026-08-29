@@ -21,6 +21,13 @@ INVESTIGATIONS_STORE = {
     }
 }
 
+@router.get("/investigations", response_model=List[InvestigationFull], tags=["Investigations"])
+def list_investigations():
+    results = []
+    for inv_id in INVESTIGATIONS_STORE:
+        results.append(get_investigation(inv_id))
+    return results
+
 @router.post("/investigations", response_model=InvestigationFull, tags=["Investigations"])
 def create_investigation(payload: InvestigationCreate):
     inv_id = f"INV-2026-{len(INVESTIGATIONS_STORE)+1:03d}"
