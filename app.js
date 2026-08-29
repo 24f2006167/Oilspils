@@ -307,6 +307,7 @@
           `, { maxWidth: 260 })
           .addTo(state.layerGroups.vessels);
       });
+    }
     // 6 — Critical Marine Habitats (ESI Index)
     if (data.ecoZones) {
       data.ecoZones.forEach(zone => {
