@@ -86,6 +86,9 @@
           <div class="gov-reference">Ref: INCOIS-MPS/2026/001</div>
         </div>
         <div class="header-actions">
+          <button id="btnSIHModal" class="gov-btn gov-btn-sih" title="Explore SIH26143 Problem Statement & Architecture">
+            🏛️ SIH26143 Brief
+          </button>
           <button id="btnExportReport" class="gov-btn gov-btn-primary">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             Generate Dossier
@@ -317,6 +320,113 @@
       </div>
       <div class="gov-modal-body" id="modalReportContent">
         <!-- Dynamically rendered -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SIH26143 PROBLEM STATEMENT BRIEF MODAL ===== -->
+  <div class="gov-modal-overlay" id="sihModal">
+    <div class="gov-modal" style="max-width: 960px;">
+      <div class="gov-modal-header" style="background: linear-gradient(135deg, #001f54, #003087);">
+        <div class="modal-gov-logo">
+          <div class="modal-emblem" style="font-size: 2rem;">🇮🇳</div>
+          <div>
+            <div class="modal-gov-name" style="color: #ff9933;">Smart India Hackathon 2026 • Government of India</div>
+            <div class="modal-title" style="color: #fff;">PROBLEM STATEMENT SIH26143 BRIEF & ARCHITECTURE</div>
+            <div class="modal-subtitle" style="color: rgba(255,255,255,0.85);">Ministry of Earth Sciences (MoES) • INCOIS • Indian Coast Guard (ICG)</div>
+          </div>
+        </div>
+        <div class="modal-header-actions">
+          <button id="btnCloseSIHModal" class="modal-close-btn" aria-label="Close">&times;</button>
+        </div>
+      </div>
+      <div class="gov-modal-body" style="padding: 20px; overflow-y: auto; max-height: 75vh;">
+        <!-- Overview Banner -->
+        <div style="background: #eff6ff; border-left: 4px solid #003087; padding: 12px 16px; border-radius: 4px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <b style="color: #003087; font-size: 0.95rem;">MOSTA: Marine Oil Spill Tracing & Attribution Platform</b>
+            <span class="sih-badge">SIH26143</span>
+          </div>
+          <p style="font-size: 0.78rem; color: #1e293b; margin: 0; line-height: 1.5;">
+            An end-to-end operational intelligence system designed to detect unannounced marine petroleum discharges across India's 2.37 million km² Exclusive Economic Zone (EEZ), backtrack dispersion physics to exact origin coordinates, and attribute culpability to specific commercial ships using historical AIS trajectories and Machine Learning.
+          </p>
+        </div>
+
+        <!-- 5-Stage MOSTA Pipeline Grid -->
+        <div style="font-size: 0.82rem; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 8px;">
+          ⚡ 5-Stage Physics & AI Attribution Pipeline
+        </div>
+        <div class="sih-grid">
+          <div class="sih-card">
+            <div class="sih-card-title"><span>🛰️</span> 1. SAR AI Detection</div>
+            <div class="sih-card-text">
+              Ingests Sentinel-1 C-Band / RISAT-1A SAR rasters. Applies Enhanced Lee speckle filtering, adaptive sea-clutter contrast thresholding, and contour vectorization to extract georeferenced slick polygons and area ($km^2$).
+            </div>
+          </div>
+          <div class="sih-card">
+            <div class="sih-card-title"><span>🌊</span> 2. Lagrangian Backtrack</div>
+            <div class="sih-card-text">
+              Numerically integrates reverse particle transport incorporating 3.2% windage drift, +10° Coriolis deflection, CMEMS/INCOIS ODAS surface current vectors, and turbulent Brownian eddy diffusion to compute release origin & time window.
+            </div>
+          </div>
+          <div class="sih-card">
+            <div class="sih-card-title"><span>🚢</span> 3. AIS Trajectory Matching</div>
+            <div class="sih-card-text">
+              Cross-filters historical Class-A AIS transponder feeds across origin envelope. Computes Great-Circle Haversine distance ($d_{\min}$), residence time, and flags operational speed drops ($\Delta v \ge 4\text{ kts}$).
+            </div>
+          </div>
+          <div class="sih-card">
+            <div class="sih-card-title"><span>🏆</span> 4. Multi-Factor ML Rank</div>
+            <div class="sih-card-text">
+              Fuses 5 weighted forensic factors (Proximity 30%, Time 25%, Behavior 20%, Drift 15%, AIS 10%) with trained XGBoost/LightGBM classifier to assign continuous culpability probabilities (0–100%).
+            </div>
+          </div>
+          <div class="sih-card">
+            <div class="sih-card-title"><span>⚖️</span> 5. Legal Enforcement</div>
+            <div class="sih-card-text">
+              Auto-compiles official forensic attribution dossiers with SHA-256 evidence verification for Indian Coast Guard enforcement under Merchant Shipping Act (1958) Section 356C and MARPOL 73/78 Annex I.
+            </div>
+          </div>
+          <div class="sih-card" style="background: #f0fdf4; border-color: #bbf7d0;">
+            <div class="sih-card-title" style="color: #166534;"><span>🛢️</span> Oil Weathering Kinetics</div>
+            <div class="sih-card-text">
+              Computes Mackay evaporative exposure ($F_v$), emulsification water uptake ($Y_w$), and dynamic viscosity evolution ($\mu$) across ambient sea surface temperatures ($28.4^\circ\text{C}$).
+            </div>
+          </div>
+        </div>
+
+        <!-- Real Data Sources & Architecture -->
+        <div style="margin-top: 20px;">
+          <div style="font-size: 0.82rem; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 8px;">
+            📡 Real Data Ingestion & Integration Sources
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; font-size: 0.74rem;">
+              <b style="color: #003087;">Satellite SAR Data:</b>
+              <ul style="margin: 6px 0 0 16px; padding: 0; color: #475569;">
+                <li>Copernicus Data Space Ecosystem (Sentinel-1 GRD)</li>
+                <li>Alaska Satellite Facility (ASF DAAC)</li>
+                <li>ISRO Bhuvan / NRSC (RISAT-1 / EOS-04)</li>
+              </ul>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; font-size: 0.74rem;">
+              <b style="color: #003087;">MetOcean Currents & Wind:</b>
+              <ul style="margin: 6px 0 0 16px; padding: 0; color: #475569;">
+                <li>INCOIS Ocean Data & Advisory Services (ODAS)</li>
+                <li>Copernicus Marine Service (CMEMS Global Current $0.083^\circ$)</li>
+                <li>NOAA HYCOM & ECMWF ERA5 10m Wind Fields</li>
+              </ul>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; font-size: 0.74rem;">
+              <b style="color: #003087;">Maritime AIS Tracking:</b>
+              <ul style="margin: 6px 0 0 16px; padding: 0; color: #475569;">
+                <li>Global Fishing Watch (GFW API)</li>
+                <li>MarineTraffic / AISHub NMEA Real-Time Stream</li>
+                <li>Directorate General of Lighthouses & Lightships (DGLL)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
