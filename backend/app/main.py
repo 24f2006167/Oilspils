@@ -14,7 +14,10 @@ from backend.app.db import models
 from backend.app.api.routes import health, investigations, detection, tracing, vessels, ranking
 
 # Auto-create all SQLite tables on startup
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(f"⚠️ DB table initialization notice: {e}")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
