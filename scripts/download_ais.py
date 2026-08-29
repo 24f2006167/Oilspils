@@ -15,19 +15,27 @@ import json
 import csv
 import requests
 import pandas as pd
-import geopandas as gpd
+try:
+    import geopandas as gpd
+except ImportError:
+    gpd = None
 from pathlib import Path
 from datetime import datetime, timedelta
-from shapely.geometry import Point, Polygon
+
+# Load environment variables from .env
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 OUTPUT_DIR = Path("data/raw/ais")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
 
-GFW_API_TOKEN = os.getenv("GFW_API_TOKEN", "")  # Get free from https://globalfishingwatch.org/our-apis/
-
-MT_API_KEY    = os.getenv("MT_API_KEY", "")      # MarineTraffic API key
+GFW_API_TOKEN = os.getenv("GFW_API_TOKEN", "")  # Loaded from .env
+MT_API_KEY    = os.getenv("MT_API_KEY", "")      # Loaded from .env
 
 # ─── SOURCE 1: GLOBAL FISHING WATCH (FREE) ───────────────────────────────────
 
@@ -73,12 +81,21 @@ def download_gfw_vessel_tracks(
 
         vessels = resp.json().get("entries", [])
         if not vessels:
-            print(f"  ⚠️ No vessel found for MMSI {mmsi}")
+            print(f"  ⚠️ No vessel entries found for MMSI {mmsi}")
             continue
 
-        vessel_id = vessels[0]["id"]
-        vessel_name = vessels[0].get("shipname", "UNKNOWN")
-        print(f"  Found: {vessel_name} (ID: {vessel_id})")
+        entry = vessels[0]
+        self_info = entry.get("selfReportedInfo", [{}])[0] if entry.get("selfReportedInfo") else {}
+        combined_info = entry.get("combinedSourcesInfo", [{}])[0] if entry.get("combinedSourcesInfo") else {}
+        
+        vessel_id = self_info.get("id") or combined_info.get("vesselId") or entry.get("id")
+        vessel_name = self_info.get("shipname") or entry.get("shipname", f"MMSI-{mmsi}")
+        flag = self_info.get("flag", "UNKNOWN")
+        print(f"  ✅ Found live AIS vessel: {vessel_name} (Flag: {flag}, ID: {vessel_id})")
+
+        if not vessel_id:
+            print(f"  ⚠️ No valid vessel ID found for MMSI {mmsi}")
+            continue
 
         # Step 2: Get track
         track_url = (

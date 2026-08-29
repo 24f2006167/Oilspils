@@ -29,5 +29,12 @@ Thumbs.db
 .coverage
 htmlcov/
 
+# Environment and Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
 # Logs
 *.log
