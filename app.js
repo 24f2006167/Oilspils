@@ -92,44 +92,40 @@
 
     L.control.zoom({ position: 'bottomright' }).addTo(state.map);
 
-    // CARTO Basemaps API Key from workspace
-    const cartoKey = 'cb1_2it4_1_88b146b5e567a7f8ff15eb10';
-
-    // 1. Primary: Carto Voyager (Crystal-clear coastal bathymetry & shipping lanes)
-    const cartoVoyager = L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${cartoKey}`, {
-      subdomains: 'abcd',
+    // 100% Watermark-Free & Key-Free High-Performance Tile Providers
+    // 1. Primary: Coastal & Marine Topo (Clean, high-contrast, zero watermark)
+    const topoLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
-      attribution: '© OpenStreetMap contributors, © CARTO'
+      attribution: '© Esri, HERE, Garmin, Intermap, USGS'
     });
 
-    // 2. Satellite Imagery: Esri World Imagery (High-res optical satellite view)
-    const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 18,
-      attribution: '© Esri, Maxar, Earthstar Geographics'
-    });
-
-    // 3. Dark Tactical: Carto Dark Matter (Night surveillance radar theme)
-    const cartoDark = L.tileLayer(`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?api_key=${cartoKey}`, {
-      subdomains: 'abcd',
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors, © CARTO'
-    });
-
-    // 4. OpenStreetMap Standard
+    // 2. OpenStreetMap Standard (Fast, community-verified, zero watermark)
     const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap contributors'
     });
 
-    // Use Carto Voyager as default (crystal clear, beautiful for maritime navigation)
-    cartoVoyager.addTo(state.map);
+    // 3. Satellite Imagery: High-Res Optical Satellite (Zero watermark)
+    const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 18,
+      attribution: '© Esri, Maxar, Earthstar Geographics'
+    });
+
+    // 4. Maritime Physical / Streets (Zero watermark)
+    const streetLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: '© Esri, DeLorme, NAVTEQ'
+    });
+
+    // Use Coastal Topo as default (crisp, professional, 100% watermark-free)
+    topoLayer.addTo(state.map);
 
     // Layer control for instant basemap switching
     L.control.layers({
-      '🌊 Maritime Tactical (Default)': cartoVoyager,
-      '🛰️ Real Satellite Imagery':      esriSat,
-      '🌑 Night Radar (Dark)':           cartoDark,
-      '🗺️ OpenStreetMap':               osmLayer
+      '🌊 Coastal Tactical (Default)': topoLayer,
+      '🗺️ OpenStreetMap':              osmLayer,
+      '🛰️ Real Satellite Imagery':     esriSat,
+      '🌐 Marine Street / Nautical':    streetLayer
     }, {}, { position: 'bottomright', collapsed: true }).addTo(state.map);
 
     // Attribution
