@@ -86,6 +86,9 @@
           <div class="gov-reference">Ref: INCOIS-MPS/2026/001</div>
         </div>
         <div class="header-actions">
+          <button id="btnLiveSim" class="gov-btn" style="background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; font-weight: 800; border: 1px solid #14532d;" title="Run Custom Live Physics & AI Backtrack Simulation">
+            ⚡ Run Live Sim
+          </button>
           <button id="btnSIHModal" class="gov-btn gov-btn-sih" title="Explore SIH26143 Problem Statement & Architecture">
             🏛️ SIH26143 Brief
           </button>
@@ -431,6 +434,97 @@
     </div>
   </div>
 
+  <!-- ===== LIVE PHYSICS & BACKTRACKING SIMULATION STUDIO MODAL ===== -->
+  <div class="gov-modal-overlay" id="simModal">
+    <div class="gov-modal" style="max-width: 780px;">
+      <div class="gov-modal-header" style="background: linear-gradient(135deg, #065f46, #047857);">
+        <div class="modal-gov-logo">
+          <div class="modal-emblem" style="font-size: 1.8rem;">⚡</div>
+          <div>
+            <div class="modal-gov-name" style="color: #6ee7b7;">Lagrangian Physics & Weathering Engine • SIH26143</div>
+            <div class="modal-title" style="color: #fff;">LIVE CUSTOM OIL SPILL SIMULATION STUDIO</div>
+            <div class="modal-subtitle" style="color: rgba(255,255,255,0.85);">Adjust MetOcean conditions & run real-time reverse particle backtracking</div>
+          </div>
+        </div>
+        <div class="modal-header-actions">
+          <button id="btnCloseSimModal" class="modal-close-btn" aria-label="Close">&times;</button>
+        </div>
+      </div>
+      <div class="gov-modal-body" style="padding: 20px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <!-- Column 1: MetOcean & Spill Coordinates -->
+          <div>
+            <div style="font-size: 0.78rem; font-weight: 800; color: #003087; text-transform: uppercase; margin-bottom: 8px;">
+              📍 Spill Detection Parameters
+            </div>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+              <div style="flex: 1;">
+                <label style="font-size: 0.7rem; font-weight: 700; color: #475569;">Latitude (°N)</label>
+                <input type="number" id="simLat" value="19.142" step="0.001" style="width: 100%; padding: 6px 8px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 4px;">
+              </div>
+              <div style="flex: 1;">
+                <label style="font-size: 0.7rem; font-weight: 700; color: #475569;">Longitude (°E)</label>
+                <input type="number" id="simLon" value="72.605" step="0.001" style="width: 100%; padding: 6px 8px; font-size: 0.8rem; border: 1px solid #cbd5e1; border-radius: 4px;">
+              </div>
+            </div>
+
+            <div style="font-size: 0.78rem; font-weight: 800; color: #003087; text-transform: uppercase; margin-bottom: 8px;">
+              🌊 Ocean Current Forcing (INCOIS / CMEMS)
+            </div>
+            <div style="margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700;">
+                <span>Current Speed: <b id="simCurrentSpeedVal" style="color: #0284c7;">0.42 m/s</b></span>
+              </div>
+              <input type="range" id="simCurrentSpeed" min="0.05" max="1.50" step="0.05" value="0.42" style="width: 100%;">
+            </div>
+            <div style="margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700;">
+                <span>Current Direction: <b id="simCurrentDirVal" style="color: #0284c7;">228° (SW)</b></span>
+              </div>
+              <input type="range" id="simCurrentDir" min="0" max="360" step="5" value="228" style="width: 100%;">
+            </div>
+          </div>
+
+          <!-- Column 2: Wind & Time Horizon -->
+          <div>
+            <div style="font-size: 0.78rem; font-weight: 800; color: #003087; text-transform: uppercase; margin-bottom: 8px;">
+              💨 10m Wind Forcing (3.2% Windage)
+            </div>
+            <div style="margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700;">
+                <span>Wind Speed: <b id="simWindSpeedVal" style="color: #d97706;">14.6 kts</b></span>
+              </div>
+              <input type="range" id="simWindSpeed" min="2" max="40" step="1" value="14.6" style="width: 100%;">
+            </div>
+            <div style="margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700;">
+                <span>Wind Heading: <b id="simWindDirVal" style="color: #d97706;">245° (WSW)</b></span>
+              </div>
+              <input type="range" id="simWindDir" min="0" max="360" step="5" value="245" style="width: 100%;">
+            </div>
+
+            <div style="font-size: 0.78rem; font-weight: 800; color: #003087; text-transform: uppercase; margin-bottom: 8px;">
+              ⏳ Backtracking Duration
+            </div>
+            <div style="margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700;">
+                <span>Time Horizon: <b id="simHoursVal" style="color: #16a34a;">6.0 Hours</b></span>
+              </div>
+              <input type="range" id="simHours" min="1" max="24" step="0.5" value="6.0" style="width: 100%;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation Trigger Button -->
+        <div style="margin-top: 16px; display: flex; gap: 12px; align-items: center;">
+          <button id="btnExecuteSim" class="gov-btn" style="flex: 1; background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; font-size: 0.85rem; font-weight: 800; padding: 10px 16px; border: none; border-radius: 4px; cursor: pointer; box-shadow: 0 2px 8px rgba(22,163,74,0.3);">
+            🚀 Execute Real-Time Lagrangian Backtrack & Weathering
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== GOV FOOTER ===== -->
   <footer class="gov-footer">
     <div class="footer-container">
@@ -463,7 +557,7 @@
 
   <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="cases-data.js?v=20260829_4"></script>
-  <script src="app.js?v=20260829_4"></script>
+  <script src="cases-data.js?v=20260829_7"></script>
+  <script src="app.js?v=20260829_7"></script>
 </body>
 </html>

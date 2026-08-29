@@ -166,8 +166,9 @@
     const top = data.vessels.find(v => v.rank === 1);
     if (top && DOM.telTopSuspect) DOM.telTopSuspect.textContent = `${top.name} (${top.overallScore}%)`;
 
-    // Fly map
-    state.map.flyTo(data.center, data.zoom, { duration: 1.5, easeLinearity: 0.4 });
+    // Center map immediately
+    state.map.setView(data.center, data.zoom);
+    setTimeout(() => { state.map.invalidateSize(); }, 200);
 
     // Render
     renderMapLayers(data);
@@ -1013,6 +1014,42 @@
       })
     );
 
+    // Live Simulation Studio
+    DOM.btnLiveSim = document.getElementById('btnLiveSim');
+    DOM.simModal = document.getElementById('simModal');
+    DOM.btnCloseSimModal = document.getElementById('btnCloseSimModal');
+    DOM.btnExecuteSim = document.getElementById('btnExecuteSim');
+
+    DOM.btnLiveSim?.addEventListener('click', () => DOM.simModal?.classList.add('active'));
+    DOM.btnCloseSimModal?.addEventListener('click', () => DOM.simModal?.classList.remove('active'));
+    DOM.simModal?.addEventListener('click', e => {
+      if (e.target === DOM.simModal) DOM.simModal.classList.remove('active');
+    });
+
+    // Range slider live value badges
+    document.getElementById('simCurrentSpeed')?.addEventListener('input', e => {
+      const el = document.getElementById('simCurrentSpeedVal');
+      if (el) el.textContent = `${parseFloat(e.target.value).toFixed(2)} m/s`;
+    });
+    document.getElementById('simCurrentDir')?.addEventListener('input', e => {
+      const el = document.getElementById('simCurrentDirVal');
+      if (el) el.textContent = `${e.target.value}°`;
+    });
+    document.getElementById('simWindSpeed')?.addEventListener('input', e => {
+      const el = document.getElementById('simWindSpeedVal');
+      if (el) el.textContent = `${e.target.value} kts`;
+    });
+    document.getElementById('simWindDir')?.addEventListener('input', e => {
+      const el = document.getElementById('simWindDirVal');
+      if (el) el.textContent = `${e.target.value}°`;
+    });
+    document.getElementById('simHours')?.addEventListener('input', e => {
+      const el = document.getElementById('simHoursVal');
+      if (el) el.textContent = `${parseFloat(e.target.value).toFixed(1)} Hours`;
+    });
+
+    DOM.btnExecuteSim?.addEventListener('click', executeRealTimeSimulation);
+
     DOM.btnExportReport?.addEventListener('click', openReportModal);
     DOM.btnSIHModal?.addEventListener('click', () => DOM.sihModal?.classList.add('active'));
     DOM.btnCloseSIHModal?.addEventListener('click', () => DOM.sihModal?.classList.remove('active'));
@@ -1035,6 +1072,102 @@
     DOM.sihModal?.addEventListener('click', e => {
       if (e.target === DOM.sihModal) DOM.sihModal.classList.remove('active');
     });
+  }
+
+  // ============================================================
+  // REAL-TIME LAGRANGIAN & WEATHERING PHYSICS ENGINE
+  // ============================================================
+  function executeRealTimeSimulation() {
+    const lat = parseFloat(document.getElementById('simLat')?.value || 19.142);
+    const lon = parseFloat(document.getElementById('simLon')?.value || 72.605);
+    const currSpeed = parseFloat(document.getElementById('simCurrentSpeed')?.value || 0.42); // m/s
+    const currDir = parseFloat(document.getElementById('simCurrentDir')?.value || 228);       // deg
+    const windSpeed = parseFloat(document.getElementById('simWindSpeed')?.value || 14.6);    // kts
+    const windDir = parseFloat(document.getElementById('simWindDir')?.value || 245);        // deg
+    const hours = parseFloat(document.getElementById('simHours')?.value || 6.0);
+
+    // Physical Lagrangian Backtracking Equation:
+    // 1. Current vector components (m/s)
+    const currRad = (currDir * Math.PI) / 180;
+    const u_curr = currSpeed * Math.sin(currRad);
+    const v_curr = currSpeed * Math.cos(currRad);
+
+    // 2. Wind vector components (3.2% windage + 10 deg Coriolis deflection)
+    const windSpeedMs = windSpeed * 0.514444;
+    const windRad = ((windDir + 10) * Math.PI) / 180;
+    const u_wind = 0.032 * windSpeedMs * Math.sin(windRad);
+    const v_wind = 0.032 * windSpeedMs * Math.cos(windRad);
+
+    // 3. Total drift velocity (m/s)
+    const u_total = u_curr + u_wind;
+    const v_total = v_curr + v_wind;
+
+    // 4. Reverse displacement over elapsed seconds
+    const dt_sec = hours * 3600;
+    const dx_m = -u_total * dt_sec;
+    const dy_m = -v_total * dt_sec;
+
+    // Convert meters to degrees lat/lon (1 deg lat ~ 111,320m)
+    const dLat = dy_m / 111320;
+    const dLon = dx_m / (111320 * Math.cos((lat * Math.PI) / 180));
+
+    const originLat = lat + dLat;
+    const originLon = lon + dLon;
+
+    // Update active case data dynamically with real physical calculations
+    const data = INVESTIGATION_CASES[state.currentCaseId];
+    if (data) {
+      data.detection.center = [lat, lon];
+      data.trace.surfaceCurrentSpeed = `${currSpeed.toFixed(2)} m/s`;
+      data.trace.currentDirectionDeg = currDir;
+      data.trace.windSpeedKts = windSpeed;
+      data.trace.windDirectionDeg = windDir;
+      data.trace.originCenter = [originLat, originLon];
+      
+      const uncert = 0.030 + (hours * 0.003);
+      data.trace.originPolygon = [
+        [originLat + uncert*0.7, originLon - uncert*0.8],
+        [originLat + uncert*0.8, originLon + uncert*0.9],
+        [originLat - uncert*0.6, originLon + uncert*1.1],
+        [originLat - uncert*0.9, originLon - uncert*0.5],
+        [originLat + uncert*0.7, originLon - uncert*0.8]
+      ];
+      data.trace.driftVector = [
+        [originLat, originLon],
+        [originLat - dLat*0.33, originLon - dLon*0.33],
+        [originLat - dLat*0.66, originLon - dLon*0.66],
+        [lat, lon]
+      ];
+
+      // Recompute candidate vessel proximity and evidence score on the fly
+      data.vessels.forEach(v => {
+        if (v.track && v.track.length) {
+          const mid = v.track[Math.floor(v.track.length / 2)];
+          const distKm = Math.sqrt(Math.pow((mid.lat - originLat)*111, 2) + Math.pow((mid.lon - originLon)*111*Math.cos(lat*Math.PI/180), 2));
+          v.closestApproachKm = parseFloat(distKm.toFixed(1));
+          const proxScore = Math.max(15, Math.min(98, Math.round(100 - distKm * 3.5)));
+          v.evidence.proximity.score = proxScore;
+          v.overallScore = Math.round(
+            (v.evidence.proximity.score * 0.30) +
+            (v.evidence.timeMatch.score * 0.25) +
+            (v.evidence.trajectory.score * 0.20) +
+            (v.evidence.drift.score * 0.15) +
+            (v.evidence.aisQuality.score * 0.10)
+          );
+        }
+      });
+      data.vessels.sort((a, b) => b.overallScore - a.overallScore);
+      data.vessels.forEach((v, idx) => {
+        v.rank = idx + 1;
+        v.isTopSuspect = (idx === 0);
+      });
+
+      // Close modal and redraw dynamic map layers
+      DOM.simModal?.classList.remove('active');
+      renderMapLayers(data);
+      renderStageView(state.currentStage);
+      state.map.flyTo([lat, lon], data.zoom, { duration: 1.2 });
+    }
   }
 
   // ============================================================
