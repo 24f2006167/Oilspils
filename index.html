@@ -129,36 +129,36 @@
 
       <!-- 5-Stage Pipeline Tabs -->
       <div class="gov-stage-tabs">
-        <button class="gov-stage-btn active" data-stage="dashboard" id="tab-dashboard">
+        <button class="gov-stage-btn active" data-stage="dashboard" id="tab-dashboard" onclick="window.OceanGuardApp.switchStage('dashboard')">
           <span class="stage-icon-gov">📊</span>
           <span class="stage-name-gov">Overview</span>
         </button>
         <div class="stage-connector"></div>
-        <button class="gov-stage-btn" data-stage="detect" id="tab-detect">
+        <button class="gov-stage-btn" data-stage="detect" id="tab-detect" onclick="window.OceanGuardApp.switchStage('detect')">
           <span class="stage-num-badge">01</span>
           <span class="stage-icon-gov">🛰️</span>
           <span class="stage-name-gov">DETECT</span>
         </button>
         <div class="stage-connector"></div>
-        <button class="gov-stage-btn" data-stage="trace" id="tab-trace">
+        <button class="gov-stage-btn" data-stage="trace" id="tab-trace" onclick="window.OceanGuardApp.switchStage('trace')">
           <span class="stage-num-badge">02</span>
           <span class="stage-icon-gov">🌊</span>
           <span class="stage-name-gov">TRACE</span>
         </button>
         <div class="stage-connector"></div>
-        <button class="gov-stage-btn" data-stage="match" id="tab-match">
+        <button class="gov-stage-btn" data-stage="match" id="tab-match" onclick="window.OceanGuardApp.switchStage('match')">
           <span class="stage-num-badge">03</span>
           <span class="stage-icon-gov">🚢</span>
           <span class="stage-name-gov">MATCH</span>
         </button>
         <div class="stage-connector"></div>
-        <button class="gov-stage-btn" data-stage="rank" id="tab-rank">
+        <button class="gov-stage-btn" data-stage="rank" id="tab-rank" onclick="window.OceanGuardApp.switchStage('rank')">
           <span class="stage-num-badge">04</span>
           <span class="stage-icon-gov">🏆</span>
           <span class="stage-name-gov">RANK</span>
         </button>
         <div class="stage-connector"></div>
-        <button class="gov-stage-btn" data-stage="explain" id="tab-explain">
+        <button class="gov-stage-btn" data-stage="explain" id="tab-explain" onclick="window.OceanGuardApp.switchStage('explain')">
           <span class="stage-num-badge">05</span>
           <span class="stage-icon-gov">🧠</span>
           <span class="stage-name-gov">EXPLAIN</span>
@@ -234,7 +234,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             Reset View
           </button>
-          <button id="btnToggleSARView" class="map-tool-btn sar-btn" title="Toggle SAR false-colour overlay">
+          <button id="btnToggleSARView" class="map-tool-btn sar-btn" title="Toggle SAR false-colour overlay" onclick="window.OceanGuardApp.toggleSAR()">
             🛰️ SAR Mode
           </button>
         </div>
@@ -463,7 +463,7 @@
 
   <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="cases-data.js"></script>
-  <script src="app.js"></script>
+  <script src="cases-data.js?v=20260829_2"></script>
+  <script src="app.js?v=20260829_2"></script>
 </body>
 </html>

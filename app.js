@@ -1049,6 +1049,11 @@
   // ============================================================
   window.OceanGuardApp = {
     switchStage: renderStageView,
+    toggleSAR: toggleSARMode,
+    openSIHModal() {
+      DOM.sihModal?.classList.add('active');
+    },
+    openReportModal,
     highlightVessel(id) {
       const d = INVESTIGATION_CASES[state.currentCaseId];
       const v = d?.vessels.find(x => x.id === id);
@@ -1056,8 +1061,7 @@
         const last = v.track[v.track.length - 1];
         state.map.flyTo([last.lat, last.lon], 12, { duration: 0.9 });
       }
-    },
-    openReportModal
+    }
   };
 
   // ============================================================
